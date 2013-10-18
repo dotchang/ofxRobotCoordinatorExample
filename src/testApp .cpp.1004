@@ -1,0 +1,252 @@
+#include "testApp.h"
+#include "aiScene.h"
+
+void printAiMatrix4x4(aiMatrix4x4 m){
+	cout << "Transformation: " << endl;
+	cout << m.a1 << ", " << m.a2 << ", " << m.a3 << ", " << m.a4 << endl;
+	cout << m.b1 << ", " << m.b2 << ", " << m.b3 << ", " << m.b4 << endl;
+	cout << m.c1 << ", " << m.c2 << ", " << m.c3 << ", " << m.c4 << endl;
+	cout << m.d1 << ", " << m.d2 << ", " << m.d3 << ", " << m.d4 << endl;
+}
+
+void printNode(const aiNode* node)
+{
+	cout << "Name: " << node->mName.data << endl;
+	cout << "Parent: ";
+	if(node->mParent){
+		cout << node->mParent->mName.data << endl;
+	}
+	cout << "NumChildren: " << node->mNumChildren << endl;
+	for(int i=0; i<node->mNumChildren; i++){
+		cout << "Child: " << node->mChildren[i]->mName.data << endl;
+	}
+	cout << "NumMeshes: " << node->mNumMeshes << endl;
+	printAiMatrix4x4(node->mTransformation);
+	
+	for(int i=0; i<node->mNumMeshes; i++){
+		cout << "Meshes[" << i << "]: " << node->mMeshes[i] << endl;
+	}
+	cout << endl;
+}
+
+void searchPrintNode(const aiNode* node)
+{	
+	printNode(node);
+	for(int i=0; i<node->mNumChildren; i++){
+		searchPrintNode(node->mChildren[i]);
+	}
+}
+
+void searchRegistOrigin(aiNode* node, map<string, aiMatrix4x4>& it)
+{
+	it[node->mName.data] = node->mTransformation;
+	for(int i=0; i<node->mNumChildren; i++){
+		searchRegistOrigin(node->mChildren[i],it);
+	}
+}
+
+//--------------------------------------------------------------
+void testApp::setup(){
+    ofSetLogLevel(OF_LOG_VERBOSE);
+    ofBackground(50, 0);
+
+    ofDisableArbTex(); // we need GL_TEXTURE_2D for our models coords.
+
+    bAnimate = false;
+    bAnimateMouse = false;
+    animationPosition = 0;
+    
+    model.loadModel("kawada-hironx-parallelfingers.dae", false);
+	searchRegistOrigin(model.getAssimpScene()->mRootNode, TransformationOrigin);
+	searchPrintNode(model.getAssimpScene()->mRootNode);
+	
+	model.getAssimpScene()->mRootNode->FindNode("RARM_JOINT0_Link")->mTransformation *= aiMatrix4x4().FromEulerAnglesXYZ(0,0,45*3.14/180.0);
+
+    model.setPosition(ofGetWidth() * 0.5, (float)ofGetHeight() * 0.75 , 0);
+    model.setLoopStateForAllAnimations(OF_LOOP_NORMAL);
+    model.playAllAnimations();
+    if(!bAnimate) {
+        model.setPausedForAllAnimations(true);
+    }
+    
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+
+	ofEnableDepthTest();
+
+    glShadeModel(GL_SMOOTH); //some model / light stuff
+    light.enable();
+    ofEnableSeparateSpecularLight();
+}
+
+//--------------------------------------------------------------
+void testApp::update(){
+	static float pan = 0;
+	pan += 10.0f;
+	if(pan>180.0f) pan-=360.0f;
+	model.getAssimpScene()->mRootNode->FindNode("HEAD_JOINT0_Link")->mTransformation = TransformationOrigin["HEAD_JOINT0_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,0,pan*3.14/180.0);
+
+    model.update();
+    
+    if(bAnimateMouse) {
+        model.setPositionForAllAnimations(animationPosition);
+    }
+
+    mesh = model.getCurrentAnimatedMesh(0);
+}
+
+//--------------------------------------------------------------
+void testApp::draw(){
+	ofSetColor(255);
+	ofDrawAxis(0.05);
+    ofPushMatrix();
+    ofTranslate(model.getPosition().x+100, model.getPosition().y, 0);
+    ofRotate(-mouseX, 0, 1, 0);
+    ofTranslate(-model.getPosition().x, -model.getPosition().y, 0);
+    model.drawFaces();
+	ofDisableDepthTest();
+	ofDisableLighting();
+	for(int i=0; i<model.getNumMeshes(); i++){
+		ofPushMatrix();
+		ofMultMatrix(model.getModelMatrix());
+		ofxAssimpMeshHelper & meshHelper = model.getMeshHelper(i);
+		ofMultMatrix(meshHelper.matrix);
+		ofDrawAxis(0.05);
+		ofPopMatrix();
+	}
+	ofEnableLighting();
+	ofEnableDepthTest();
+	ofPopMatrix();
+
+   if(ofGetGLProgrammableRenderer()){
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+		glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+    }
+    glEnable(GL_NORMALIZE);
+
+    ofPushMatrix();
+    ofTranslate(model.getPosition().x-300, model.getPosition().y, 0);
+    ofRotate(-mouseX, 0, 1, 0);
+    ofTranslate(-model.getPosition().x, -model.getPosition().y, 0);
+    
+    ofxAssimpMeshHelper & meshHelper = model.getMeshHelper(0);
+    
+    ofMultMatrix(model.getModelMatrix());
+    ofMultMatrix(meshHelper.matrix);
+    
+    ofMaterial & material = meshHelper.material;
+    if(meshHelper.hasTexture()){
+        meshHelper.getTexturePtr()->bind();
+    }
+    material.begin();
+    mesh.drawWireframe();
+    material.end();
+    if(meshHelper.hasTexture()){
+        meshHelper.getTexturePtr()->unbind();
+    }
+    ofPopMatrix();
+
+    if(ofGetGLProgrammableRenderer()){
+    	glPopAttrib();
+    }
+
+    ofDrawBitmapString("fps: "+ofToString(ofGetFrameRate(), 2), 10, 15);
+    ofDrawBitmapString("keys 1-5 load models, spacebar to trigger animation", 10, 30);
+    ofDrawBitmapString("drag to control animation with mouseY", 10, 45);
+    ofDrawBitmapString("num animations for this model: " + ofToString(model.getAnimationCount()), 10, 60);
+}
+
+//--------------------------------------------------------------
+void testApp::keyPressed(int key){
+    ofPoint modelPosition(ofGetWidth() * 0.5, (float)ofGetHeight() * 0.75);
+    switch (key) {
+        case '1':
+            model.loadModel("astroBoy_walk.dae");
+            model.setPosition(modelPosition.x, modelPosition.y, modelPosition.z);
+            ofEnableSeparateSpecularLight();
+            break;
+        case '2':
+            model.loadModel("TurbochiFromXSI.dae");
+            model.setPosition(modelPosition.x, modelPosition.y, modelPosition.z);
+            model.setRotation(0, -180, 1, 0, 0);
+            ofEnableSeparateSpecularLight();
+            break;
+        case '3':
+            model.loadModel("dwarf.x");
+            model.setPosition(modelPosition.x, modelPosition.y, modelPosition.z);
+            ofDisableSeparateSpecularLight();
+            break;
+        case '4':
+            model.loadModel("monster-animated-character-X.X");
+            model.setPosition(modelPosition.x, modelPosition.y, modelPosition.z);
+            model.setRotation(0, -90, 0, 0, 1);
+            ofDisableSeparateSpecularLight();
+            break;
+		case '5':
+			model.loadModel("squirrel/NewSquirrel.3ds");
+		    model.setPosition(modelPosition.x, modelPosition.y, modelPosition.z);
+            ofDisableSeparateSpecularLight();
+			break;
+		case ' ':
+			bAnimate = !bAnimate;
+			break;
+        default:
+            break;
+    }
+
+	mesh = model.getMesh(0);
+
+    model.setLoopStateForAllAnimations(OF_LOOP_NORMAL);
+    model.playAllAnimations();
+    if(!bAnimate) {
+        model.setPausedForAllAnimations(true);
+    }
+}
+
+//--------------------------------------------------------------
+void testApp::keyReleased(int key){
+    //
+}
+
+//--------------------------------------------------------------
+void testApp::mouseMoved(int x, int y ){
+
+}
+
+//--------------------------------------------------------------
+void testApp::mouseDragged(int x, int y, int button){
+    // scrub through aninations manually.
+	animationPosition = y / (float)ofGetHeight();
+}
+
+//--------------------------------------------------------------
+void testApp::mousePressed(int x, int y, int button){
+    // pause all animations, so we can scrub through them manually.
+    model.setPausedForAllAnimations(true);
+	animationPosition = y / (float)ofGetHeight();
+    bAnimateMouse = true;
+}
+
+//--------------------------------------------------------------
+void testApp::mouseReleased(int x, int y, int button){
+    // unpause animations when finished scrubbing.
+    if(bAnimate) {
+        model.setPausedForAllAnimations(false);
+    }
+    bAnimateMouse = false;
+}
+
+//--------------------------------------------------------------
+void testApp::windowResized(int w, int h){
+
+}
+
+//--------------------------------------------------------------
+void testApp::gotMessage(ofMessage msg){
+
+}
+
+//--------------------------------------------------------------
+void testApp::dragEvent(ofDragInfo dragInfo){
+
+}
+

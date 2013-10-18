@@ -1,0 +1,49 @@
+#ifndef _TEST_APP
+#define _TEST_APP
+
+#include "ofMain.h"
+#include "ofxAssimpModelLoader.h"
+#include "ofVboMesh.h"
+#include <map>
+#include "ofxGui.h"
+#include "XmlRpc.h"
+
+class testApp : public ofBaseApp{
+
+	public:
+		void setup();
+		void update();
+		void draw();
+		
+		void keyPressed(int key);
+		void keyReleased(int key);
+		void mouseMoved(int x, int y );
+		void mouseDragged(int x, int y, int button);
+		void mousePressed(int x, int y, int button);
+		void mouseReleased(int x, int y, int button);
+		void windowResized(int w, int h);
+		void dragEvent(ofDragInfo dragInfo);
+		void gotMessage(ofMessage msg);		
+    
+        ofxAssimpModelLoader model;
+        ofLight	light;
+
+		std::map<std::string, aiMatrix4x4> TransformationOrigin;
+
+		ofEasyCam cam;
+
+		std::vector<int> nearestIndex;
+		ofParameter<float> chest, pan, tilt;
+		ofParameter<float> rarm[6], larm[6];
+
+		ofxPanel gui;
+
+		ofParameter<bool> rpc_get_angles;
+		ofParameter<bool> rpc_set_angles;
+		XmlRpc::XmlRpcClient *c;
+
+private:
+	void testApp::utilUpdateAngle(char *key, float r, float p, float y);
+};
+
+#endif

@@ -1,0 +1,298 @@
+#include "testApp.h"
+#include "aiScene.h"
+
+#if _DEBUG
+#pragma comment(lib, "C:\\workspace\\xmlrpc++0.7\\Debug\\xmlrpc.lib")
+#else
+#pragma comment(lib, "C:\\workspace\\xmlrpc++0.7\\Release\\xmlrpc.lib")
+#endif
+
+void printAiMatrix4x4(aiMatrix4x4 m){
+	cout << "Transformation: " << endl;
+	cout << m.a1 << ", " << m.a2 << ", " << m.a3 << ", " << m.a4 << endl;
+	cout << m.b1 << ", " << m.b2 << ", " << m.b3 << ", " << m.b4 << endl;
+	cout << m.c1 << ", " << m.c2 << ", " << m.c3 << ", " << m.c4 << endl;
+	cout << m.d1 << ", " << m.d2 << ", " << m.d3 << ", " << m.d4 << endl;
+}
+
+void printNode(const aiNode* node)
+{
+	cout << "Name: " << node->mName.data << endl;
+	cout << "Parent: ";
+	if(node->mParent){
+		cout << node->mParent->mName.data << endl;
+	}
+	cout << "NumChildren: " << node->mNumChildren << endl;
+	for(int i=0; i<node->mNumChildren; i++){
+		cout << "Child: " << node->mChildren[i]->mName.data << endl;
+	}
+	cout << "NumMeshes: " << node->mNumMeshes << endl;
+	printAiMatrix4x4(node->mTransformation);
+	
+	for(int i=0; i<node->mNumMeshes; i++){
+		cout << "Meshes[" << i << "]: " << node->mMeshes[i] << endl;
+	}
+	cout << endl;
+}
+
+void searchPrintNode(const aiNode* node)
+{	
+	printNode(node);
+	for(int i=0; i<node->mNumChildren; i++){
+		searchPrintNode(node->mChildren[i]);
+	}
+}
+
+void searchRegistOrigin(aiNode* node, map<string, aiMatrix4x4>& it)
+{
+	it[node->mName.data] = node->mTransformation;
+	for(int i=0; i<node->mNumChildren; i++){
+		searchRegistOrigin(node->mChildren[i],it);
+	}
+}
+
+//--------------------------------------------------------------
+void testApp::setup(){
+    ofSetLogLevel(OF_LOG_VERBOSE);
+    ofBackground(50, 0);
+	    
+    //model.loadModel("kawada-hironx-parallelfingers.dae", false);
+	model.loadModel("pa10.maind.dae", false);
+	//model.loadModel("GR001b.dae", false);
+	searchRegistOrigin(model.getAssimpScene()->mRootNode, TransformationOrigin);
+	searchPrintNode(model.getAssimpScene()->mRootNode);
+
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+
+	ofEnableDepthTest();
+
+    glShadeModel(GL_SMOOTH); //some model / light stuff
+    light.enable();
+    ofEnableSeparateSpecularLight();
+	model.enableMaterials();
+
+	cam.setFov(80);
+	cam.setDistance(1);
+	cam.setPosition((float)ofGetWidth() * -0.5, (float)ofGetHeight() * -0.5 , 0);
+	cam.setTarget(model.getPosition());
+	cam.lookAt(model.getPosition(),ofVec3f(0,-1,0));
+
+	chest.set("chest", 0, -162.3, 162.3);
+	pan.set("pan", 0, -70, 70);
+	tilt.set("tilt", 0, -20, 70);
+	rarm[0].set("rarm0", 0, -88, 88);
+	rarm[1].set("rarm1", 0, -140, 60);
+	rarm[2].set("rarm2", 0, -158, 0);
+	rarm[3].set("rarm3", 0, -165, 105);
+	rarm[4].set("rarm4", 0, -100, 100);
+	rarm[5].set("rarm5", 0, -163, 163);
+	larm[0].set("larm0", 0, -88, 88);
+	larm[1].set("larm1", 0, -140, 60);
+	larm[2].set("larm2", 0, -158, 0);
+	larm[3].set("larm3", 0, -165, 105);
+	larm[4].set("larm4", 0, -100, 100);
+	larm[5].set("larm5", 0, -163, 163);
+
+	gui.setup("HIRONX");
+	gui.add(chest);
+	gui.add(pan);
+	gui.add(tilt);
+	for(int i=0; i<6; i++){	gui.add(rarm[i]); }
+	for(int i=0; i<6; i++){ gui.add(larm[i]); }
+
+	gui.add(rpc_get_angles.set("get angles", false));
+	gui.add(rpc_set_angles.set("set angles", false));
+	c = new XmlRpc::XmlRpcClient( "localhost", 8000 );
+}
+
+void testApp::utilUpdateAngle(char *key, float r, float p, float y)
+{
+	model.getAssimpScene()->mRootNode->FindNode(key)->mTransformation = TransformationOrigin.at(key)*aiMatrix4x4().FromEulerAnglesXYZ(r*3.14/180.0,p*3.14/180.0,y*3.14/180.0);
+}
+
+//--------------------------------------------------------------
+void testApp::update(){
+	if(rpc_get_angles){
+		rpc_get_angles = false;
+		XmlRpc::XmlRpcValue args, res;
+		c->execute("getJointAnglesDeg", args, res);
+		chest = (double)res[0];
+		pan = (double)res[1];
+		tilt = (double)res[2];
+		for(int i=0; i<6; i++){ rarm[i] = (double)res[3+i]; }
+		for(int i=0; i<6; i++){ larm[i] = (double)res[9+i]; }
+	}
+	if(rpc_set_angles){
+		rpc_set_angles = false;
+		XmlRpc::XmlRpcValue angles, robots, rarms, larms, rhands, lhands, args, res;
+		angles.setSize(5);
+		robots.setSize(3);
+		rarms.setSize(6);
+		larms.setSize(6);
+		rhands.setSize(4);
+		lhands.setSize(4);
+		robots[0] = chest; robots[1] = pan; robots[2] = tilt;
+		for(int i=0; i<6; i++){ rarms[i] = rarm[i]; }
+		for(int i=0; i<6; i++){ larms[i] = larm[i]; }
+		for(int i=0; i<4; i++){ rhands[i] = 0.0f; }
+		for(int i=0; i<4; i++){ lhands[i] = 0.0f; }
+		angles[0] = robots;
+		angles[1] = rarms;
+		angles[2] = larms;
+		angles[3] = rhands;
+		angles[4] = lhands;
+		args.setSize(2);
+		args[0] = angles;
+		args[1] = 30;
+		c->execute("setJointAnglesDeg", args, res);
+	}
+
+	/*
+	model.getAssimpScene()->mRootNode->FindNode("CHEST_JOINT0_Link")->mTransformation = TransformationOrigin["CHEST_JOINT0_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,0,-chest*3.14/180.0);
+	model.getAssimpScene()->mRootNode->FindNode("HEAD_JOINT0_Link")->mTransformation = TransformationOrigin["HEAD_JOINT0_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,0,-pan*3.14/180.0);
+	model.getAssimpScene()->mRootNode->FindNode("HEAD_JOINT1_Link")->mTransformation = TransformationOrigin["HEAD_JOINT1_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,-tilt*3.14/180.0,0);
+	model.getAssimpScene()->mRootNode->FindNode("RARM_JOINT0_Link")->mTransformation = TransformationOrigin["RARM_JOINT0_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,0,-rarm[0]*3.14/180.0);
+	model.getAssimpScene()->mRootNode->FindNode("RARM_JOINT1_Link")->mTransformation = TransformationOrigin["RARM_JOINT1_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,-rarm[1]*3.14/180.0,0);
+	model.getAssimpScene()->mRootNode->FindNode("RARM_JOINT2_Link")->mTransformation = TransformationOrigin["RARM_JOINT2_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,-rarm[2]*3.14/180.0,0);
+	model.getAssimpScene()->mRootNode->FindNode("RARM_JOINT3_Link")->mTransformation = TransformationOrigin["RARM_JOINT3_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,0,-rarm[3]*3.14/180.0);
+	model.getAssimpScene()->mRootNode->FindNode("RARM_JOINT4_Link")->mTransformation = TransformationOrigin["RARM_JOINT4_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,-rarm[4]*3.14/180.0,0);
+	model.getAssimpScene()->mRootNode->FindNode("RARM_JOINT5_Link")->mTransformation = TransformationOrigin["RARM_JOINT5_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(-rarm[5]*3.14/180.0,0,0);
+	model.getAssimpScene()->mRootNode->FindNode("LARM_JOINT0_Link")->mTransformation = TransformationOrigin["LARM_JOINT0_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,0,-larm[0]*3.14/180.0);
+	model.getAssimpScene()->mRootNode->FindNode("LARM_JOINT1_Link")->mTransformation = TransformationOrigin["LARM_JOINT1_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,-larm[1]*3.14/180.0,0);
+	model.getAssimpScene()->mRootNode->FindNode("LARM_JOINT2_Link")->mTransformation = TransformationOrigin["LARM_JOINT2_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,-larm[2]*3.14/180.0,0);
+	model.getAssimpScene()->mRootNode->FindNode("LARM_JOINT3_Link")->mTransformation = TransformationOrigin["LARM_JOINT3_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,0,-larm[3]*3.14/180.0);
+	model.getAssimpScene()->mRootNode->FindNode("LARM_JOINT4_Link")->mTransformation = TransformationOrigin["LARM_JOINT4_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(0,-larm[4]*3.14/180.0,0);
+	model.getAssimpScene()->mRootNode->FindNode("LARM_JOINT5_Link")->mTransformation = TransformationOrigin["LARM_JOINT5_Link"]*aiMatrix4x4().FromEulerAnglesXYZ(-larm[5]*3.14/180.0,0,0);
+	*/
+	model.update();
+}
+
+//--------------------------------------------------------------
+void testApp::draw(){
+	ofSetColor(255);
+	
+	cam.begin();
+    ofPushMatrix();	
+	model.drawFaces();
+	ofDisableDepthTest();
+	ofDisableLighting();
+	for(int i=0; i<model.getMeshCount()/*model.getNumMeshes()*/; i++){
+		ofPushMatrix();
+		ofMultMatrix(model.getModelMatrix());
+		ofxAssimpMeshHelper & meshHelper = model.getMeshHelper(i);
+		ofMultMatrix(meshHelper.matrix);
+		ofDrawAxis(0.05);
+		ofPopMatrix();
+	}
+	ofEnableLighting();
+	ofEnableDepthTest();
+	ofPopMatrix();
+	cam.end();
+
+	ofDisableDepthTest();
+	ofDisableLighting();
+	gui.draw();
+	ofEnableLighting();
+	ofEnableDepthTest();
+}
+
+//--------------------------------------------------------------
+void testApp::keyPressed(int key){
+}
+
+//--------------------------------------------------------------
+void testApp::keyReleased(int key){
+    //
+}
+
+//--------------------------------------------------------------
+void testApp::mouseMoved(int x, int y ){
+
+}
+
+inline float adjust_value(ofParameter<float> p, float value)
+{
+	float v = (p.getMax()-p.getMin())*value +p.getMin();
+	if(v<p.getMin()) v = p.getMin();
+	else if(p.getMax()<v) v = p.getMax();
+	return v;
+}
+
+//--------------------------------------------------------------
+void testApp::mouseDragged(int x, int y, int button){
+	if(button == 1 && !nearestIndex.empty()){
+		cam.disableMouseInput();	
+		float value_x = x / (float)ofGetWidth();
+		float value_y = y / (float)ofGetHeight();
+		
+		for(int i=0; i<(int)nearestIndex.size(); i++){
+			aiString name = model.getMeshHelper(nearestIndex[i]).mesh->mName;
+			if(name == aiString("CHEST_JOINT0_Link")){ chest = adjust_value(chest, value_x); }
+			else if(name == aiString("HEAD_JOINT0_Link")){ pan =  adjust_value(pan, value_x); }
+			else if(name == aiString("HEAD_JOINT1_Link")){ tilt = adjust_value(tilt, value_y); }
+			else if(name == aiString("RARM_JOINT0_Link")){ rarm[0] = adjust_value(rarm[0], value_x); }
+			else if(name == aiString("RARM_JOINT1_Link")){ rarm[1] = adjust_value(rarm[1], value_y); }
+			else if(name == aiString("RARM_JOINT2_Link")){ rarm[2] = adjust_value(rarm[2], value_x); }
+			else if(name == aiString("RARM_JOINT3_Link")){ rarm[3] = adjust_value(rarm[3], value_x); }
+			else if(name == aiString("RARM_JOINT4_Link")){ rarm[4] = adjust_value(rarm[4], value_x); }
+			else if(name == aiString("RARM_JOINT5_Link")){ rarm[5] = adjust_value(rarm[5], value_x); }
+			else if(name == aiString("LARM_JOINT0_Link")){ larm[0] = adjust_value(larm[0], value_x); }
+			else if(name == aiString("LARM_JOINT1_Link")){ larm[1] = adjust_value(larm[1], value_y); }
+			else if(name == aiString("LARM_JOINT2_Link")){ larm[2] = adjust_value(larm[2], value_x); }
+			else if(name == aiString("LARM_JOINT3_Link")){ larm[3] = adjust_value(larm[3], value_x); }
+			else if(name == aiString("LARM_JOINT4_Link")){ larm[4] = adjust_value(larm[4], value_x); }
+			else if(name == aiString("LARM_JOINT5_Link")){ larm[5] = adjust_value(larm[5], value_x); }
+		}
+	}
+}
+
+//--------------------------------------------------------------
+void testApp::mousePressed(int x, int y, int button){
+	if(button==1){
+		int n = model.getMeshCount();
+		float nearestDistance = 0;
+		ofVec2f nearestVertex;
+		nearestIndex.clear();
+		ofVec2f mouse(x,y);
+		for(int i=0; i<n; i++){
+			ofMatrix4x4 m = model.getMeshHelper(i).matrix * model.getModelMatrix();
+			ofVec3f cur = cam.worldToScreen(m.getTranslation());
+			float distance = cur.distance(mouse);
+			if(i == 0|| distance < nearestDistance){
+				nearestDistance = distance;
+				nearestVertex = cur;
+				nearestIndex.clear();
+				nearestIndex.push_back(i);
+			}
+			else if(distance == nearestDistance){
+				nearestIndex.push_back(i);
+			}
+		}
+		if(nearestDistance > 20){
+			nearestIndex.clear();
+		}
+		for(int i=0; i<(int)nearestIndex.size(); i++){
+			cout << "Nearest Index = " << nearestIndex[i] << ", nearestDistance = " << nearestDistance << endl;
+		}
+	}
+}
+
+//--------------------------------------------------------------
+void testApp::mouseReleased(int x, int y, int button){
+	cam.enableMouseInput();
+}
+
+//--------------------------------------------------------------
+void testApp::windowResized(int w, int h){
+
+}
+
+//--------------------------------------------------------------
+void testApp::gotMessage(ofMessage msg){
+
+}
+
+//--------------------------------------------------------------
+void testApp::dragEvent(ofDragInfo dragInfo){
+
+}
