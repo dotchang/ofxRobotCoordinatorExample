@@ -39,7 +39,7 @@ void testApp::setup(){
 #ifdef _USE_PA10
 	pa10.setup();
 	target = (AbstractRobotModel*)&pa10;
-	pos.setTranslation(-1,1,0); // Coordinate of HIRONX
+	pos.setTranslation(-1,1,0);
 	pos = pos*origin; 
 	pa10.model.setPosition(pos.getTranslation().x,pos.getTranslation().y,pos.getTranslation().z);
 	pa10.gui.setPosition(800,20);
@@ -49,7 +49,7 @@ void testApp::setup(){
 #ifdef _USE_GR001
 	gr001.setup();
 	target = (AbstractRobotModel*)&gr001;
-	pos.setTranslation(-0.5,-0.5,0); // Coordinate of HIRONX
+	pos.setTranslation(-0.5,-0.5,0);
 	pos = pos*origin; 
 	gr001.model.setPosition(pos.getTranslation().x,pos.getTranslation().y,pos.getTranslation().z);
 	gr001.gui.setPosition(800,10);
