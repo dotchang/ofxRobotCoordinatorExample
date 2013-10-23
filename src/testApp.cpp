@@ -7,7 +7,7 @@
 HIRONXGUIControler hiro;
 #endif
 
-//#define _USE_PA10
+#define _USE_PA10
 #ifdef _USE_PA10
 #include "PA10GUIControler.h"
 PA10GUIControler pa10;
@@ -64,13 +64,15 @@ void testApp::setup(){
 	light.enable();
 	ofEnableSeparateSpecularLight();
 
-	cam[0].setFov(80);
-	for(int i=0; i<3; i++) cam[i].setScale(0.001);
-	cam[0].setPosition((float)ofGetWidth() * -0.5, (float)ofGetHeight() * -0.5 , 0);
-
-	cam[0].setTarget(target->getModel()->getPosition());
-	cam[0].lookAt(target->getModel()->getPosition(),ofVec3f(0,-1,0));
-	cam[0].setDistance(1.2);
+	cam.resize(3);
+	for(int i=0; i<cam.size(); i++){
+		cam[i].setFov(80);
+		cam[i].setScale(0.001);
+		cam[i].setPosition((float)ofGetWidth() * -0.5, (float)ofGetHeight() * -0.5 , 0);
+		cam[i].setTarget(target->getModel()->getPosition());
+		cam[i].lookAt(target->getModel()->getPosition(),ofVec3f(0,-1,0));
+		cam[i].setDistance(1.2);
+	}
 
 	viewpoint = 0;
 }

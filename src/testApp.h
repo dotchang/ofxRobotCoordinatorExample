@@ -22,7 +22,7 @@ class testApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);		
     
         ofLight	light;
-		ofEasyCam cam[3];
+		vector<ofEasyCam> cam;
 		int viewpoint;
 
 		std::vector<AbstractRobotModel*> model;
