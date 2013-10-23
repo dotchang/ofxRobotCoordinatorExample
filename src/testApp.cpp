@@ -25,6 +25,7 @@ void testApp::setup(){
 	ofBackground(50, 0);
 	
 	ofMatrix4x4 origin;
+	origin.makeIdentityMatrix();
 
 #ifdef _USE_HIRO
 	hiro.setup();

@@ -15,7 +15,7 @@ public:
 	virtual void mouseDragged(int x, int y, int button, ofEasyCam& cam) = 0;
 	virtual void mousePressed(int x, int y, int button, ofEasyCam& cam) = 0;
 
-
+	virtual int getCameraPosition(int id, ofEasyCam& cam) = 0;
 };
 
 #endif 

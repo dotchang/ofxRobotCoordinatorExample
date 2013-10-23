@@ -267,6 +267,21 @@ void PA10GUIControler::mousePressed(int x, int y, int button, ofEasyCam& cam)
 	}
 }
 
+int PA10GUIControler::getCameraPosition(int id, ofEasyCam& cam)
+{
+	switch(id){
+	case 0: // Normal
+	case 1:
+	case 2:
+		cam.setTarget(model.getPosition());
+		cam.lookAt(model.getPosition(),ofVec3f(0,-1,0));
+		break;
+	default:
+		return -1;
+	}
+	return 0;
+}
+
 void PA10GUIControler::keyPressed(int key)
 {
 	switch(key){

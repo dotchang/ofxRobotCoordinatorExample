@@ -17,6 +17,8 @@ public:
 	void keyPressed(int key){};
 	void mouseDragged(int x, int y, int button, ofEasyCam& cam);
 	void mousePressed(int x, int y, int button, ofEasyCam& cam);
+	
+	int getCameraPosition(int id, ofEasyCam& cam);
 
 	ofxAssimpModelLoader model;
 	std::map<std::string, aiMatrix4x4> TransformationOrigin;
