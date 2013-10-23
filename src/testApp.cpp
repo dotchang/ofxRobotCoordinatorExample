@@ -36,6 +36,7 @@ void testApp::setup(){
 
 #ifdef _USE_PA10
 	pa10.setup();
+	target = (AbstractRobotModel*)&pa10;
 #ifdef _USE_HIRO
 	ofMatrix4x4 pos;
 	pos.setTranslation(-1,1,0); // Coordinate of HIRONX
@@ -50,6 +51,7 @@ void testApp::setup(){
 
 #ifdef _USE_GR001
 	gr001.setup();
+	target = AbstractRobotModel*)&gr001;
 	pos.setTranslation(-0.5,-0.5,0); // Coordinate of HIRONX
 	pos = pos*origin; 
 	gr001.model.setPosition(pos.getTranslation().x,pos.getTranslation().y,pos.getTranslation().z);
