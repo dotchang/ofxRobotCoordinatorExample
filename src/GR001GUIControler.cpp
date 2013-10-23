@@ -136,9 +136,15 @@ void GR001GUIControler::mouseDragged(int x, int y, int button, ofEasyCam& cam)
 int GR001GUIControler::getCameraPosition(int id, ofEasyCam& cam)
 {
 	switch(id){
+<<<<<<< HEAD
 	case 0: // Normal
 	case 1:
 	case 2:
+=======
+	case 0:
+	case 1:
+	case 2: // Normal
+>>>>>>> 4df17d0b453847fd483ef940a384cf5e51645636
 		cam.setTarget(model.getPosition());
 		cam.lookAt(model.getPosition(),ofVec3f(0,-1,0));
 		break;

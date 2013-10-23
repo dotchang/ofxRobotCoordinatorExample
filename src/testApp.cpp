@@ -39,7 +39,13 @@ void testApp::setup(){
 #ifdef _USE_PA10
 	pa10.setup();
 	target = (AbstractRobotModel*)&pa10;
+<<<<<<< HEAD
 	pos.setTranslation(-1,1,0);
+=======
+#ifdef _USE_HIRO
+	ofMatrix4x4 pos;
+	pos.setTranslation(-1,1,0); // Coordinate of HIRONX
+>>>>>>> 4df17d0b453847fd483ef940a384cf5e51645636
 	pos = pos*origin; 
 	pa10.model.setPosition(pos.getTranslation().x,pos.getTranslation().y,pos.getTranslation().z);
 	pa10.gui.setPosition(800,20);
@@ -64,6 +70,7 @@ void testApp::setup(){
 	light.enable();
 	ofEnableSeparateSpecularLight();
 
+<<<<<<< HEAD
 	cam.resize(3);
 	for(int i=0; i<cam.size(); i++){
 		cam[i].setFov(80);
@@ -73,6 +80,14 @@ void testApp::setup(){
 		cam[i].lookAt(target->getModel()->getPosition(),ofVec3f(0,-1,0));
 		cam[i].setDistance(1.2);
 	}
+=======
+	cam[0].setFov(80);
+	for(int i=0; i<3; i++) cam[i].setScale(0.001);
+	cam[0].setPosition((float)ofGetWidth() * -0.5, (float)ofGetHeight() * -0.5 , 0);
+	cam[0].setTarget(target->getModel()->getPosition());
+	cam[0].lookAt(target->getModel()->getPosition(),ofVec3f(0,-1,0));
+	cam[0].setDistance(1.2);
+>>>>>>> 4df17d0b453847fd483ef940a384cf5e51645636
 
 	viewpoint = 0;
 }

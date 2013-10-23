@@ -3,6 +3,7 @@ ofxRobotCoordinatorExample
 
 Robot GUI Controler for HIRONX, PA10, GR001, etc.
 http://cvl-robot.hateblo.jp/
+<<<<<<< HEAD
 
 [Mouse Control]
 Left button Drag: Camera Rotation
@@ -26,3 +27,5 @@ PA10:
  R: 6DF21
  T: 6DF11
  T: 6DF01
+=======
+>>>>>>> 4df17d0b453847fd483ef940a384cf5e51645636

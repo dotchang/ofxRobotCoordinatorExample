@@ -20,7 +20,10 @@ public:
 	void mousePressed(int x, int y, int button, ofEasyCam& cam);
 
 	int inverseKinematics();
+<<<<<<< HEAD
 	int getCameraPosition(int id, ofEasyCam& cam);
+=======
+>>>>>>> 4df17d0b453847fd483ef940a384cf5e51645636
 	ofxAssimpModelLoader* getModel(){ return &model; }
 
 	ofxAssimpModelLoader model;
