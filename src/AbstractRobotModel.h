@@ -14,6 +14,8 @@ public:
 	virtual void keyPressed(int key) = 0;
 	virtual void mouseDragged(int x, int y, int button, ofEasyCam& cam) = 0;
 	virtual void mousePressed(int x, int y, int button, ofEasyCam& cam) = 0;
+
+
 };
 
 #endif 
