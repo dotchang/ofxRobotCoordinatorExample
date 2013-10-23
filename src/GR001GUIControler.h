@@ -19,6 +19,7 @@ public:
 	void mousePressed(int x, int y, int button, ofEasyCam& cam);
 	
 	int getCameraPosition(int id, ofEasyCam& cam);
+	ofxAssimpModelLoader* getModel(){ return &model; }
 
 	ofxAssimpModelLoader model;
 	std::map<std::string, aiMatrix4x4> TransformationOrigin;

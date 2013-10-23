@@ -2,6 +2,7 @@
 #define _ABSTRACT_ROBOT_MODEL_H
 
 #include "ofEasyCam.h"
+class ofxAssimpModelLoader;
 
 class AbstractRobotModel
 {
@@ -16,6 +17,7 @@ public:
 	virtual void mousePressed(int x, int y, int button, ofEasyCam& cam) = 0;
 
 	virtual int getCameraPosition(int id, ofEasyCam& cam) = 0;
+	virtual ofxAssimpModelLoader* getModel() = 0;
 };
 
 #endif 
