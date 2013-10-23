@@ -226,7 +226,7 @@ void HIRONXGUIControler::draw()
 	model.drawFaces();
 	ofDisableDepthTest();
 	ofDisableLighting();
-	for(int i=0; i<model.getMeshCount()/*model.getNumMeshes()*/; i++){
+	for(int i=0; i<model.getMeshCount(); i++){
 		ofPushMatrix();
 		ofMultMatrix(model.getModelMatrix());
 		ofxAssimpMeshHelper & meshHelper = model.getMeshHelper(i);
