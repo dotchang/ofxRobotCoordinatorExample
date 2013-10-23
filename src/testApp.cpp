@@ -7,13 +7,13 @@
 HIRONXGUIControler hiro;
 #endif
 
-#define _USE_PA10
+//#define _USE_PA10
 #ifdef _USE_PA10
 #include "PA10GUIControler.h"
 PA10GUIControler pa10;
 #endif
 
-#define _USE_GR001
+//#define _USE_GR001
 #ifdef _USE_GR001
 #include "GR001GUIControler.h"
 GR001GUIControler gr001;
@@ -35,17 +35,13 @@ void testApp::setup(){
 	target = (AbstractRobotModel*)&hiro;
 #endif
 
+	ofMatrix4x4 pos;
 #ifdef _USE_PA10
 	pa10.setup();
 	target = (AbstractRobotModel*)&pa10;
-#ifdef _USE_HIRO
-	ofMatrix4x4 pos;
 	pos.setTranslation(-1,1,0); // Coordinate of HIRONX
 	pos = pos*origin; 
 	pa10.model.setPosition(pos.getTranslation().x,pos.getTranslation().y,pos.getTranslation().z);
-#else
-	pa10.model.setPosition(0,0,0);
-#endif
 	pa10.gui.setPosition(800,20);
 	model.push_back((AbstractRobotModel*)&pa10);
 #endif
