@@ -7,13 +7,13 @@
 HIRONXGUIControler hiro;
 #endif
 
-#define _USE_PA10
+//#define _USE_PA10
 #ifdef _USE_PA10
 #include "PA10GUIControler.h"
 PA10GUIControler pa10;
 #endif
 
-#define _USE_GR001
+//#define _USE_GR001
 #ifdef _USE_GR001
 #include "GR001GUIControler.h"
 GR001GUIControler gr001;
