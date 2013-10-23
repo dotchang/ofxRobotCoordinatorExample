@@ -36,6 +36,7 @@ void testApp::setup(){
 
 #ifdef _USE_PA10
 	pa10.setup();
+	target = (AbstractRobotModel*)&pa10;
 #ifdef _USE_HIRO
 	ofMatrix4x4 pos;
 	pos.setTranslation(-1,1,0); // Coordinate of HIRONX
@@ -68,13 +69,8 @@ void testApp::setup(){
 	cam[0].setFov(80);
 	for(int i=0; i<3; i++) cam[i].setScale(0.001);
 	cam[0].setPosition((float)ofGetWidth() * -0.5, (float)ofGetHeight() * -0.5 , 0);
-#ifdef _USE_HIRO
-	cam[0].setTarget(hiro.model.getPosition());
-	cam[0].lookAt(hiro.model.getPosition(),ofVec3f(0,-1,0));
-#else
-	cam[0].setTarget(pa10.model.getPosition());
-	cam[0].lookAt(pa10.model.getPosition(),ofVec3f(0,-1,0));
-#endif
+	cam[0].setTarget(target->getModel()->getPosition());
+	cam[0].lookAt(target->getModel()->getPosition(),ofVec3f(0,-1,0));
 	cam[0].setDistance(1.2);
 
 	viewpoint = 0;
@@ -86,9 +82,7 @@ void testApp::update(){
 		ofScale(1.0,1.0,1.0);
 		model[i]->update();
 	}
-#ifdef _USE_HIRO
-	hiro.getCameraPosition(viewpoint,cam[viewpoint]);
-#endif
+	target->getCameraPosition(viewpoint,cam[viewpoint]);
 }
 
 //--------------------------------------------------------------
@@ -121,7 +115,7 @@ void testApp::keyPressed(int key){
 		break;
 	case 259: // F3
 #ifdef _USE_GR001
-		target = (AbstractRobotModel*)&groo1;
+		target = (AbstractRobotModel*)&gr001;
 #endif
 		break;
 	case '0': viewpoint = 0; break; // Normal View
