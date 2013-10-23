@@ -21,7 +21,10 @@ public:
 
 	int inverseKinematics();
 <<<<<<< HEAD
+<<<<<<< HEAD
 	int getCameraPosition(int id, ofEasyCam& cam);
+=======
+>>>>>>> 4df17d0b453847fd483ef940a384cf5e51645636
 =======
 >>>>>>> 4df17d0b453847fd483ef940a384cf5e51645636
 	ofxAssimpModelLoader* getModel(){ return &model; }

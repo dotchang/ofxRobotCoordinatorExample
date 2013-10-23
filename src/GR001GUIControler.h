@@ -18,7 +18,10 @@ public:
 	void mouseDragged(int x, int y, int button, ofEasyCam& cam);
 	void mousePressed(int x, int y, int button, ofEasyCam& cam);
 <<<<<<< HEAD
+<<<<<<< HEAD
 	
+=======
+>>>>>>> 4df17d0b453847fd483ef940a384cf5e51645636
 =======
 >>>>>>> 4df17d0b453847fd483ef940a384cf5e51645636
 	int getCameraPosition(int id, ofEasyCam& cam);

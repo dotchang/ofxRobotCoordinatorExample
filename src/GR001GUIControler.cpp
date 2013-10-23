@@ -137,9 +137,15 @@ int GR001GUIControler::getCameraPosition(int id, ofEasyCam& cam)
 {
 	switch(id){
 <<<<<<< HEAD
+<<<<<<< HEAD
 	case 0: // Normal
 	case 1:
 	case 2:
+=======
+	case 0:
+	case 1:
+	case 2: // Normal
+>>>>>>> 4df17d0b453847fd483ef940a384cf5e51645636
 =======
 	case 0:
 	case 1:

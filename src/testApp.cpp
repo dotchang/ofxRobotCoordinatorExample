@@ -40,8 +40,11 @@ void testApp::setup(){
 	pa10.setup();
 	target = (AbstractRobotModel*)&pa10;
 <<<<<<< HEAD
+<<<<<<< HEAD
 	pos.setTranslation(-1,1,0);
 =======
+=======
+>>>>>>> 4df17d0b453847fd483ef940a384cf5e51645636
 #ifdef _USE_HIRO
 	ofMatrix4x4 pos;
 	pos.setTranslation(-1,1,0); // Coordinate of HIRONX
