@@ -7,7 +7,7 @@
 
 #if _DEBUG
 #pragma comment(lib, "C:\\workspace\\xmlrpc++0.7\\Debug\\xmlrpc.lib")
-#pragma comment(lib, "C:\\workspace\\ClapackWin-3.2.1-1.0.0\\Bin\\Debug_Win32\\ClapackWin.lib")
+#pragma comment(lib, "C:\\workspace\\ClapackWin-3.2.1-1.0.0\\Bin\\Release_Win32\\ClapackWin.lib")
 #else
 #pragma comment(lib, "C:\\workspace\\xmlrpc++0.7\\Release\\xmlrpc.lib")
 #pragma comment(lib, "C:\\workspace\\ClapackWin-3.2.1-1.0.0\\Bin\\Release_Win32\\ClapackWin.lib")

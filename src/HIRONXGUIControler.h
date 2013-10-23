@@ -21,6 +21,7 @@ public:
 
 	int getCameraPosition(int id, ofEasyCam& cam);
 	int inverseKinematics();
+	ofxAssimpModelLoader* getModel(){ return &model; }
 
 	ofxAssimpModelLoader model;
 	std::map<std::string, aiMatrix4x4> TransformationOrigin;
