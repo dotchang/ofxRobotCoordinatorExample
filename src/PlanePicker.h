@@ -3,6 +3,7 @@
 
 #include "ofMatrix4x4.h"
 #include "of3dGraphics.h"
+#include "ofxGui.h"
 
 class PlanePicker
 {
@@ -80,14 +81,17 @@ public:
 	void setup()
 	{
 		setupModel();
+		gui.setup("Pick");
+		gui.add(plane.set("plane", ofVec4f(1,0,0,0), ofVec4f(-1,-1,-1,-100),ofVec4f(1,1,1,100)));
+		gui.setPosition(10,620);
 	}
 
 	bool update(ofVec3f p1r, ofVec3f p2r, ofVec3f p, ofVec3f n){
 		p0 = p;
 		p1 = p1r;
 		p2 = p2r;
-
-		float d = n.x*p0.x + n.y*p0.y + n.z*p0.z;
+		ofVec3f nn = n.getNormalized();
+		float d = nn.x*p0.x + nn.y*p0.y + nn.z*p0.z;
 		plane = ofVec4f(n.x, n.y, n.z, d);
 		return IntersectPlaneAndLine(&pf, p1, p2, plane);
 	}
@@ -98,7 +102,7 @@ public:
 		
 		ofPushMatrix();
 		ofQuaternion quat;
-		quat.makeRotate(ofVec3f(0,0,1),ofVec3f(plane.x,plane.y,plane.z));
+		quat.makeRotate(ofVec3f(0,0,1),ofVec3f(plane.get().x,plane.get().y,plane.get().z));
 		ofMatrix4x4 m(quat);
 		m.setTranslation(p0);
 		ofMultMatrix(m);
@@ -106,10 +110,16 @@ public:
 		ofPopMatrix();
 	}
 
+	void draw_gui(){
+		gui.draw();
+	}
+
 	ofMatrix4x4 m_w2r;
 	ofVec3f p0, p1, p2, pf;
-	ofVec4f plane;
+	ofParameter<ofVec4f> plane;
 	ofMesh plane_mesh;
+
+	ofxPanel gui;
 };
 
 #endif

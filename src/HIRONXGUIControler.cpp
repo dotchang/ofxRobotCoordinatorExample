@@ -18,6 +18,7 @@
 void HIRONXGUIControler::setup(){
 	model.setScaleNomalization(false);
 	model.loadModel("kawada-hironx-parallelfingers.dae", false);
+
 	searchRegistOrigin(model.getAssimpScene()->mRootNode, TransformationOrigin);
 	searchPrintNode(model.getAssimpScene()->mRootNode);
 
@@ -57,7 +58,7 @@ void HIRONXGUIControler::setup(){
 	c = new XmlRpc::XmlRpcClient( "localhost", 8000 );
 
 	picker.setWorldToRobotMatrix(model.getModelMatrix().getInverse()*model.getMeshHelper(0).matrix.getInverse());
-	picker.setupModel();
+	picker.setup();
 }
 
 void HIRONXGUIControler::update()
@@ -115,11 +116,22 @@ void HIRONXGUIControler::update()
 	model.update();
 
 	inverseKinematics();
-
+	
 	ofVec3f p0(0.5,0.0,0.3);
 	ofVec3f n(-0.3,0.1,0.4);
-	if(picker.update(picker.worldToRobot(p1),picker.worldToRobot(p2),p0,n.getNormalized())){
-		xyz = picker.pf;
+	if(coords.get()){
+		if(picker.update(picker.worldToRobot(p1),picker.worldToRobot(p2),p0,n)){
+			xyz = picker.pf;
+		}
+	}
+	else {
+		aiMatrix4x4 ai;
+		ai.FromEulerAnglesXYZ(0,0,-chest.get()*M_PI/180.0);
+		ofMatrix4x4 m(ai.a1,ai.a2,ai.a3,ai.a4,ai.b1,ai.b2,ai.b3,ai.b4,ai.c1,ai.c2,ai.c3,ai.c4,ai.d1,ai.d2,ai.d3,ai.d4);
+		ofMatrix4x4 mt = m.getTransposedOf(m);
+		if(picker.update(mt*picker.worldToRobot(p1),mt*picker.worldToRobot(p2),p0,n)){
+			xyz = picker.pf;
+		}
 	}
 }
 
@@ -256,12 +268,21 @@ void HIRONXGUIControler::draw()
 	ofMultMatrix(model.getModelMatrix());
 	if(coords.get()) ofMultMatrix(model.getMeshHelper(0).matrix); // HIRONX
 	else ofMultMatrix(model.getMeshHelper(1).matrix); // chest
-	picker.draw();
 	ofMultMatrix(ofMatrix4x4(mat.a1,mat.b1,mat.c1,0, mat.a2, mat.b2, mat.c2, 0, mat.a3, mat.b3, mat.c3, 0 , eetrans[0], eetrans[1], eetrans[2], 1));
 	ofSetColor(ofColor::yellow);
 	ofSphere(0.02);
 	ofDrawAxis(0.05);
 	ofPopMatrix();
+
+	if(use_picker.get()){
+		ofSetColor(ofColor::white);
+		ofPushMatrix();
+		ofMultMatrix(model.getModelMatrix());
+		if(coords.get()) ofMultMatrix(model.getMeshHelper(0).matrix); // HIRONX
+		else ofMultMatrix(model.getMeshHelper(1).matrix); // chest
+		picker.draw();
+		ofPopMatrix();
+	}
 }
 
 void HIRONXGUIControler::draw_gui()
@@ -270,6 +291,7 @@ void HIRONXGUIControler::draw_gui()
 	ofDisableLighting();
 	gui.draw();
 	ik.draw();
+	if(use_picker.get()) picker.draw_gui();
 	ofEnableLighting();
 	ofEnableDepthTest();
 }
