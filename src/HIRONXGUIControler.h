@@ -7,6 +7,8 @@
 #include <map>
 #include "XmlRpc.h"
 
+#include "PlanePicker.h"
+
 class HIRONXGUIControler : AbstractRobotModel
 {
 public:
@@ -35,10 +37,14 @@ public:
 	ofParameter<bool> coords;
 	ofParameter<ofVec3f> xyz, rpy;
 	ofxPanel ik;
+	ofParameter<bool> use_picker;
 
 	ofParameter<bool> rpc_get_angles;
 	ofParameter<bool> rpc_set_angles;
 	XmlRpc::XmlRpcClient *c;
+
+	ofVec3f p1, p2;
+	PlanePicker picker;
 };
 
 #endif

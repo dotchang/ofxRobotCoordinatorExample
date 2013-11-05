@@ -47,6 +47,7 @@ void HIRONXGUIControler::setup(){
 	ik.setup("IK");
 	ik.add(target.set("LOOKAT3D"));
 	ik.add(coords.set("Global", true));
+	ik.add(use_picker.set("Picker", false));
 	ik.add(xyz.set("xyz", ofPoint(0.6,0,0.6), ofPoint(-1,-1,-1), ofVec3f(1,1,1)));
 	ik.add(rpy.set("rpy", ofPoint(0,-180,0), ofPoint(-180,-180,-180), ofVec3f(180,180,180)));
 	ik.setPosition(10,370);
@@ -54,6 +55,9 @@ void HIRONXGUIControler::setup(){
 	gui.add(rpc_get_angles.set("get angles", false));
 	gui.add(rpc_set_angles.set("set angles", false));
 	c = new XmlRpc::XmlRpcClient( "localhost", 8000 );
+
+	picker.setWorldToRobotMatrix(model.getModelMatrix().getInverse()*model.getMeshHelper(0).matrix.getInverse());
+	picker.setupModel();
 }
 
 void HIRONXGUIControler::update()
@@ -111,6 +115,12 @@ void HIRONXGUIControler::update()
 	model.update();
 
 	inverseKinematics();
+
+	ofVec3f p0(0.5,0.0,0.3);
+	ofVec3f n(-0.3,0.1,0.4);
+	if(picker.update(picker.worldToRobot(p1),picker.worldToRobot(p2),p0,n.getNormalized())){
+		xyz = picker.pf;
+	}
 }
 
 int HIRONXGUIControler::inverseKinematics()
@@ -246,6 +256,7 @@ void HIRONXGUIControler::draw()
 	ofMultMatrix(model.getModelMatrix());
 	if(coords.get()) ofMultMatrix(model.getMeshHelper(0).matrix); // HIRONX
 	else ofMultMatrix(model.getMeshHelper(1).matrix); // chest
+	picker.draw();
 	ofMultMatrix(ofMatrix4x4(mat.a1,mat.b1,mat.c1,0, mat.a2, mat.b2, mat.c2, 0, mat.a3, mat.b3, mat.c3, 0 , eetrans[0], eetrans[1], eetrans[2], 1));
 	ofSetColor(ofColor::yellow);
 	ofSphere(0.02);
@@ -289,9 +300,15 @@ void HIRONXGUIControler::mouseDragged(int x, int y, int button, ofEasyCam& cam)
 			else if(name == aiString("LARM_JOINT5_Link")){ larm[5] = adjust_value(larm[5], value_x); }
 		}
 	}
+	else if(button == 2 && use_picker.get()){
+		cam.disableMouseInput();
+		p1 = cam.screenToWorld(ofVec3f(x,y,-1));
+		p2 = cam.screenToWorld(ofVec3f(x,y,1));
+	}
 }
 
 void HIRONXGUIControler::mousePressed(int x, int y, int button, ofEasyCam& cam){
+
 	if(button==1){
 		int n = model.getMeshCount();
 		float nearestDistance = 0;
