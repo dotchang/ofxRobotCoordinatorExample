@@ -23,6 +23,7 @@ GR001GUIControler gr001;
 void testApp::setup(){
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	ofBackground(50, 0);
+	ofSetWindowShape(1280,960);
 	
 	ofMatrix4x4 origin;
 	origin.makeIdentityMatrix();

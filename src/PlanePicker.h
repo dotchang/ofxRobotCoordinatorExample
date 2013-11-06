@@ -82,8 +82,19 @@ public:
 	{
 		setupModel();
 		gui.setup("Pick");
-		gui.add(plane.set("plane", ofVec4f(1,0,0,0), ofVec4f(-1,-1,-1,-100),ofVec4f(1,1,1,100)));
+		gui.add(p0.set("p0", ofPoint(0,0,0), ofPoint(-1,-1,-1), ofPoint(1,1,1)));
+		gui.add(n.set("n", ofPoint(1,0,0), ofPoint(-1,-1,-1), ofPoint(1,1,1)));
+		gui.add(plane.set("plane", ofVec4f(1,0,0,0), ofVec4f(-1,-1,-1,-1),ofVec4f(1,1,1,1)));
 		gui.setPosition(10,620);
+	}
+
+	bool update(ofVec3f p1r, ofVec3f p2r){
+		p1 = p1r;
+		p2 = p2r;
+		ofVec3f nn = n.get().getNormalized();
+		float d = nn.x*p0.get().x + nn.y*p0.get().y + nn.z*p0.get().z;
+		plane = ofVec4f(nn.x, nn.y, nn.z, d);
+		return IntersectPlaneAndLine(&pf, p1, p2, plane);
 	}
 
 	bool update(ofVec3f p1r, ofVec3f p2r, ofVec3f p, ofVec3f n){
@@ -91,21 +102,30 @@ public:
 		p1 = p1r;
 		p2 = p2r;
 		ofVec3f nn = n.getNormalized();
-		float d = nn.x*p0.x + nn.y*p0.y + nn.z*p0.z;
-		plane = ofVec4f(n.x, n.y, n.z, d);
+		float d = nn.x*p0.get().x + nn.y*p0.get().y + nn.z*p0.get().z;
+		plane = ofVec4f(nn.x, nn.y, nn.z, d);
+		return IntersectPlaneAndLine(&pf, p1, p2, plane);
+	}
+
+	bool update(ofVec3f p1r, ofVec3f p2r, ofVec4f pl){
+		p1 = p1r;
+		p2 = p2r;
+		plane = pl;
 		return IntersectPlaneAndLine(&pf, p1, p2, plane);
 	}
 
 	void draw(){
 		ofLine(p1,p2);
 		ofSphere(pf,0.01);
-		
+
 		ofPushMatrix();
 		ofQuaternion quat;
 		quat.makeRotate(ofVec3f(0,0,1),ofVec3f(plane.get().x,plane.get().y,plane.get().z));
 		ofMatrix4x4 m(quat);
-		m.setTranslation(p0);
+		if(use_normal.get()) m.setTranslation(p0);
+		else m.setTranslation(ofVec3f(p0.get().x,p0.get().y,(plane.get().w-plane.get().x*p0.get().x-plane.get().y*p0.get().y)/plane.get().z));
 		ofMultMatrix(m);
+		ofBox(ofPoint(0,0,0),0.01);
 		plane_mesh.drawVertices();
 		ofPopMatrix();
 	}
@@ -115,10 +135,12 @@ public:
 	}
 
 	ofMatrix4x4 m_w2r;
-	ofVec3f p0, p1, p2, pf;
+	ofVec3f p1, p2, pf;
 	ofParameter<ofVec4f> plane;
 	ofMesh plane_mesh;
 
+	ofParameter<ofVec3f> p0, n;
+	ofParameter<bool> use_normal;
 	ofxPanel gui;
 };
 
