@@ -100,6 +100,9 @@
     <ClCompile Include="src\IKFastUtil.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\ofxTrackball.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -459,6 +462,9 @@
       <Filter>addons\ofxUi\src</Filter>
     </ClInclude>
     <ClInclude Include="src\PlanePicker.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ofxTrackball.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

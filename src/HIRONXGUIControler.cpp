@@ -61,6 +61,9 @@ void HIRONXGUIControler::setup(){
 	picker.setup();
 	picker.p0.set(ofPoint(0.5,0.0,0.3));
 	picker.n.set(ofPoint(-0.3,0.1,0.4));
+
+	trackball = new ofxTrackball(0.5,0.0,0.3,0.04);
+	// trackball.update(ofEventArgs
 }
 
 void HIRONXGUIControler::update()
@@ -122,7 +125,7 @@ void HIRONXGUIControler::update()
 	if(use_picker.get()){
 		if(coords.get()){
 			if(picker.update(picker.worldToRobot(p1),picker.worldToRobot(p2))){
-				xyz = picker.pf;
+				if(picker.onPlane(picker.pf)) xyz = picker.pf;
 			}
 		}
 		else {
@@ -131,7 +134,7 @@ void HIRONXGUIControler::update()
 			ofMatrix4x4 m(ai.a1,ai.a2,ai.a3,ai.a4,ai.b1,ai.b2,ai.b3,ai.b4,ai.c1,ai.c2,ai.c3,ai.c4,ai.d1,ai.d2,ai.d3,ai.d4);
 			ofMatrix4x4 mt = m.getTransposedOf(m);
 			if(picker.update(mt*picker.worldToRobot(p1),mt*picker.worldToRobot(p2))){
-				xyz = picker.pf;
+				if(picker.onPlane(picker.pf)) xyz = picker.pf;
 			}
 		}
 	}
@@ -284,6 +287,7 @@ void HIRONXGUIControler::draw()
 		if(coords.get()) ofMultMatrix(model.getMeshHelper(0).matrix); // HIRONX
 		else ofMultMatrix(model.getMeshHelper(1).matrix); // chest
 		picker.draw();
+		//trackball->draw();
 		ofPopMatrix();
 		ofEnableLighting();
 	}

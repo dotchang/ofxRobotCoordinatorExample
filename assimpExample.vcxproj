@@ -117,6 +117,7 @@
     <ClCompile Include="src\mitsubishi-pa10\ikfast60.Transform6D.0_1_3_4_5_6_f21.cpp" />
     <ClCompile Include="src\mitsubishi-pa10\ikfast60.Transform6D.0_2_3_4_5_6_f11.cpp" />
     <ClCompile Include="src\mitsubishi-pa10\ikfast60.Transform6D.1_2_3_4_5_6_f01.cpp" />
+    <ClCompile Include="src\ofxTrackball.cpp" />
     <ClCompile Include="src\PA10GUIControler.cpp" />
     <ClCompile Include="src\RobotModelUtil.cpp" />
     <ClCompile Include="src\testApp.cpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="src\kawada-hironx\ikfast.h" />
     <ClInclude Include="src\mitsubishi-pa10\ikfast-pa10.h" />
     <ClInclude Include="src\mitsubishi-pa10\ikfast.h" />
+    <ClInclude Include="src\ofxTrackball.h" />
     <ClInclude Include="src\PA10GUIControler.h" />
     <ClInclude Include="src\PlanePicker.h" />
     <ClInclude Include="src\RobotModelUtil.h" />

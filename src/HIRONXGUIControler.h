@@ -8,6 +8,7 @@
 #include "XmlRpc.h"
 
 #include "PlanePicker.h"
+#include "ofxTrackball.h"
 
 class HIRONXGUIControler : AbstractRobotModel
 {
@@ -45,6 +46,7 @@ public:
 
 	ofVec3f p1, p2;
 	PlanePicker picker;
+	ofxTrackball *trackball;
 };
 
 #endif

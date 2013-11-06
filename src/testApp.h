@@ -3,6 +3,7 @@
 
 #include "ofMain.h"
 #include "AbstractRobotModel.h"
+#include "ofxTrackball.h"
 
 class testApp : public ofBaseApp{
 

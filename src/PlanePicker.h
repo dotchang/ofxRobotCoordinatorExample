@@ -68,7 +68,7 @@ public:
 	}
 
 	void setupModel(){
-		plane_mesh = plane_mesh.plane(1.0, 1.0, 24, 24);
+		plane_mesh = plane_mesh.plane(width, height, 24, 24);
 		ofQuaternion quat;
 		quat.makeRotate(ofVec3f(0,1,0),ofVec3f(1,0,0));
 		ofMatrix4x4 mv(quat);
@@ -79,7 +79,9 @@ public:
 	}
 
 	void setup()
-	{
+	{	
+		width = 1.0;
+		height = 1.0;
 		setupModel();
 		gui.setup("Pick");
 		gui.add(p0.set("p0", ofPoint(0,0,0), ofPoint(-1,-1,-1), ofPoint(1,1,1)));
@@ -114,6 +116,24 @@ public:
 		return IntersectPlaneAndLine(&pf, p1, p2, plane);
 	}
 
+	ofVec3f robotToPlane(ofVec3f p){
+		ofQuaternion quat;
+		quat.makeRotate(ofVec3f(0,0,1),ofVec3f(plane.get().x,plane.get().y,plane.get().z));
+		ofMatrix4x4 m(quat);
+		m.setTranslation(p0);
+		ofMatrix4x4 im = m.getInverse();
+		return p*im;
+	}
+
+	ofVec3f robotToPlane(){ return robotToPlane(pf); }
+
+	bool onPlane(ofVec3f p){
+		ofVec3f v = robotToPlane(p);
+		if(v.x<-0.5*width||0.5*width<v.x) return false;
+		if(v.y<-0.5*height||0.5*height<v.y) return false;
+		return true;
+	}
+
 	void draw(){
 		ofLine(p1,p2);
 		ofSphere(pf,0.01);
@@ -122,8 +142,7 @@ public:
 		ofQuaternion quat;
 		quat.makeRotate(ofVec3f(0,0,1),ofVec3f(plane.get().x,plane.get().y,plane.get().z));
 		ofMatrix4x4 m(quat);
-		if(use_normal.get()) m.setTranslation(p0);
-		else m.setTranslation(ofVec3f(p0.get().x,p0.get().y,(plane.get().w-plane.get().x*p0.get().x-plane.get().y*p0.get().y)/plane.get().z));
+		m.setTranslation(p0);
 		ofMultMatrix(m);
 		ofBox(ofPoint(0,0,0),0.01);
 		plane_mesh.drawVertices();
@@ -137,10 +156,10 @@ public:
 	ofMatrix4x4 m_w2r;
 	ofVec3f p1, p2, pf;
 	ofParameter<ofVec4f> plane;
+	float width, height;
 	ofMesh plane_mesh;
 
 	ofParameter<ofVec3f> p0, n;
-	ofParameter<bool> use_normal;
 	ofxPanel gui;
 };
 
